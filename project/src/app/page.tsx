@@ -6,19 +6,24 @@ import jsPDF from 'jspdf';
 import Image from 'next/image';
 
 // log de erro Supabase
-
 console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 console.log("Supabase Anon Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 // Conexão com Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) 
+  : null;
+
+// Verificação para garantir que a conexão foi estabelecida corretamente
+if (!supabase) {
+  console.error('Erro ao conectar ao Supabase. Verifique as variáveis de ambiente.');
+}
 
 export default function Home() {
   const [nf, setNf] = useState('');
-  // const [etiqueta, setEtiqueta] = useState('');
   const [volumes, setVolumes] = useState(0);
   const [volumesRestantes, setVolumesRestantes] = useState(0);
   const [message, setMessage] = useState('');
@@ -51,7 +56,6 @@ export default function Home() {
       if (nfEtiqueta === nf) {
         setVolumesRestantes(prev => prev - 1);
         if (volumesRestantes === 1) {
-          // setConferencias(prev => [...prev, { nf, volumes }]);
           setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
           setBipandoVolumes(false);
         } else {
@@ -66,13 +70,22 @@ export default function Home() {
 
   // Função para salvar conferência no Supabase
   const handleSave = async () => {
+    if (!supabase) {
+      setMessage('Erro: Supabase não está configurado.');
+      return;
+    }
+
     const novaConferencia = { nf, volumes };
-    await supabase
+    const { error } = await supabase
       .from('conferencias')
       .insert([novaConferencia]);
 
-    setConferencias(prev => [...prev, novaConferencia]);
-    setMessage('Conferência salva com sucesso!');
+    if (error) {
+      setMessage(`Erro ao salvar a conferência: ${error.message}`);
+    } else {
+      setConferencias(prev => [...prev, novaConferencia]);
+      setMessage('Conferência salva com sucesso!');
+    }
   };
 
   // Função para gerar PDF do relatório
