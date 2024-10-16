@@ -57,6 +57,7 @@ export default function Home() {
         if (volumesRestantes === 1) {
           setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
           setBipandoVolumes(false);
+          handleSave(); // Salvar conferência
         } else {
           setMessage(`Volume bipado. Restam ${volumesRestantes - 1} volumes.`);
         }
@@ -82,12 +83,14 @@ const handleSave = async () => {
     setMessage(`Erro ao salvar a conferência: ${error.message}`);
   } else {
     setConferencias(prev => [...prev, novaConferencia]);
+    console.log('Conferências atuais:', [...conferencias, novaConferencia]);
     setMessage('Conferência salva com sucesso!');
   }
 };
 
   // Função para gerar PDF do relatório
   const handleExportPDF = () => {
+    console.log('Gerando PDF...');
     const doc = new jsPDF();
 
     // Adicionar logo no PDF
