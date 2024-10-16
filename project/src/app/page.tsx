@@ -5,6 +5,11 @@ import { useState } from 'react';
 import jsPDF from 'jspdf';
 import Image from 'next/image';
 
+// log de erro Supabase
+
+console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log("Supabase Anon Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
 // Conexão com Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
