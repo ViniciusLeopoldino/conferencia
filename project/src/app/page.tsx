@@ -46,7 +46,7 @@ export default function Home() {
       if (nfEtiqueta === nf) {
         setVolumesRestantes(prev => prev - 1);
         if (volumesRestantes === 1) {
-          setConferencias(prev => [...prev, { nf, volumes }]);
+          // setConferencias(prev => [...prev, { nf, volumes }]);
           setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
           setBipandoVolumes(false);
         } else {
