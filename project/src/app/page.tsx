@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useState } from 'react';
 import jsPDF from 'jspdf';
+import Image from 'next/image';
 
 // Conexão com Supabase
 const supabase = createClient(
@@ -12,7 +13,7 @@ const supabase = createClient(
 
 export default function Home() {
   const [nf, setNf] = useState('');
-  const [etiqueta, setEtiqueta] = useState('');
+  // const [etiqueta, setEtiqueta] = useState('');
   const [volumes, setVolumes] = useState(0);
   const [volumesRestantes, setVolumesRestantes] = useState(0);
   const [message, setMessage] = useState('');
@@ -106,7 +107,7 @@ export default function Home() {
     <div className="main-container">
       <div className="content">
         {/* Logo da empresa */}
-        <img src="/logo.png" alt="Logo da Empresa" style={{ width: '150px', marginBottom: '20px' }} />
+        <Image src="/logo.png" alt="Logo" width={150} height={150} />
 
         <h1>Conferência de Expedição</h1>
         {!bipandoVolumes ? (
@@ -123,6 +124,7 @@ export default function Home() {
           <>
             <button onClick={handleNovaNota}>Incluir Nova Nota</button>
             <button onClick={handleExportPDF}>Finalizar e Exportar Relatório</button>
+            <button onClick={handleSave}>Salvar Conferência</button>
           </>
         )}
       </div>
