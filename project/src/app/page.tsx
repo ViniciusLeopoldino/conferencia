@@ -5,22 +5,17 @@ import { useState } from 'react';
 import jsPDF from 'jspdf';
 import Image from 'next/image';
 
-// log de erro Supabase
+// Log de erro Supabase
 console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 console.log("Supabase Anon Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 // Conexão com Supabase
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) 
-  : null;
-
-// Verificação para garantir que a conexão foi estabelecida corretamente
-if (!supabase) {
-  console.error('Erro ao conectar ao Supabase. Verifique as variáveis de ambiente.');
+const supabaseUrl = 'https://xkwmlnbrpiegykdnrppp.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+if (!supabaseKey) {
+  throw new Error('Supabase key is not defined');
 }
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Home() {
   const [nf, setNf] = useState('');
