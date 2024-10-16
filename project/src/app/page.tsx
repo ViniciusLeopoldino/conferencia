@@ -13,23 +13,44 @@ const supabase = createClient(
 export default function Home() {
   const [nf, setNf] = useState('');
   const [etiqueta, setEtiqueta] = useState('');
-  const [volumes, setVolumes] = useState(1);
+  const [volumes, setVolumes] = useState(0);
+  const [volumesRestantes, setVolumesRestantes] = useState(0);
   const [message, setMessage] = useState('');
-  
+  const [conferencias, setConferencias] = useState<{ nf: string, volumes: number }[]>([]);
+  const [bipandoVolumes, setBipandoVolumes] = useState(false);
+
+  // Função para tratar a mudança da quantidade de volumes
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVolumes(Number(e.target.value));
+    setVolumesRestantes(Number(e.target.value));
+    setMessage('Insira a chave da NF');
+  };
+
+  // Função para tratar a bipagem da chave NF
   const handleNfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chave = e.target.value;
     if (chave.length === 44) {
-      const nfExtraido = chave.slice(30, 36);
+      const nfExtraido = chave.slice(25, 34);
       setNf(nfExtraido);
+      setMessage(`NF: ${nfExtraido}. Agora bip os volumes.`);
+      setBipandoVolumes(true);
     }
   };
 
+  // Função para bipar os volumes
   const handleEtiquetaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const etq = e.target.value;
     if (etq.length === 19) {
-      const nfEtiqueta = etq.slice(9, 15);
+      const nfEtiqueta = etq.slice(4, 13);
       if (nfEtiqueta === nf) {
-        setMessage('OK');
+        setVolumesRestantes(prev => prev - 1);
+        if (volumesRestantes === 1) {
+          setConferencias(prev => [...prev, { nf, volumes }]);
+          setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
+          setBipandoVolumes(false);
+        } else {
+          setMessage(`Volume bipado. Restam ${volumesRestantes - 1} volumes.`);
+        }
       } else {
         setMessage('Erro: NF divergente');
         new Audio('/erro.mp3').play();
@@ -37,36 +58,73 @@ export default function Home() {
     }
   };
 
+  // Função para salvar conferência no Supabase
   const handleSave = async () => {
+    const novaConferencia = { nf, volumes };
     await supabase
       .from('conferencias')
-      .insert([{ nf_numero: nf, volumes }]);
+      .insert([novaConferencia]);
 
-    setMessage('Salvo com sucesso!');
+    setConferencias(prev => [...prev, novaConferencia]);
+    setMessage('Conferência salva com sucesso!');
   };
 
+  // Função para gerar PDF do relatório
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.text("Relatório de Conferência", 10, 10);
-    doc.text(`Nota Fiscal: ${nf} | Quantidade de volumes: ${volumes}`, 10, 20);
-    doc.text(`Data: ${new Date().toLocaleDateString()}`, 10, 30);
-    doc.text('Nome: ________________', 10, 40);
-    doc.text('RG: __________________', 10, 50);
-    doc.text('Placa: _______________', 10, 60);
-    doc.text('Assinatura: ___________', 10, 70);
+
+    // Adicionar logo no PDF
+    const logo = '/logo.png'; // Ajuste o caminho da logo
+    doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
+    // Título e conferências
+    doc.text("Relatório de Conferência", 10, 40);
+    conferencias.forEach((conf, index) => {
+      doc.text(`Nota Fiscal: ${conf.nf} | Quantidade de volumes: ${conf.volumes}`, 10, 50 + (index * 10));
+    });
+
+    // Rodapé com espaço para assinatura
+    const finalLine = 50 + (conferencias.length * 10) + 20;
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 10, finalLine);
+    doc.text('Nome: ________________', 10, finalLine + 10);
+    doc.text('RG: __________________', 10, finalLine + 20);
+    doc.text('Placa: _______________', 10, finalLine + 30);
+    doc.text('Assinatura: ___________', 10, finalLine + 40);
+
     doc.save('relatorio_conferencia.pdf');
+  };
+
+  // Reset para nova nota fiscal
+  const handleNovaNota = () => {
+    setNf('');
+    setVolumes(0);
+    setVolumesRestantes(0);
+    setMessage('Insira a quantidade de volumes');
   };
 
   return (
     <div className="main-container">
       <div className="content">
+        {/* Logo da empresa */}
+        <img src="/logo.png" alt="Logo da Empresa" style={{ width: '150px', marginBottom: '20px' }} />
+
         <h1>Conferência de Expedição</h1>
-        <input type="text" placeholder="Bipe a chave da NF" onChange={handleNfChange} />
-        <input type="text" placeholder="Bipe a etiqueta" onChange={handleEtiquetaChange} />
-        <input type="number" placeholder="Quantidade de volumes" value={volumes} onChange={(e) => setVolumes(Number(e.target.value))} />
-        <button onClick={handleSave}>Salvar</button>
-        <button onClick={handleExportPDF}>Exportar Relatório</button>
+        {!bipandoVolumes ? (
+          <>
+            <input type="number" placeholder="Quantidade de volumes" onChange={handleVolumeChange} />
+            <input type="text" placeholder="Bipe a chave da NF" onChange={handleNfChange} />
+          </>
+        ) : (
+          <input type="text" placeholder="Bipe o volume" onChange={handleEtiquetaChange} />
+        )}
         <p>{message}</p>
+
+        {!bipandoVolumes && (
+          <>
+            <button onClick={handleNovaNota}>Incluir Nova Nota</button>
+            <button onClick={handleExportPDF}>Finalizar e Exportar Relatório</button>
+          </>
+        )}
       </div>
     </div>
   );

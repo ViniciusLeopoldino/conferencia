@@ -47,6 +47,15 @@ input, button {
   padding: 10px;
 }
 
+button {
+  background-color: #09978b;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+  margin: 5px;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
