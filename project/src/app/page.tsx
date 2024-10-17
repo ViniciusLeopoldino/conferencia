@@ -23,7 +23,8 @@ if (!supabase) {
 
 export default function Home() {
   const [nf, setNf] = useState('');
-  const [volumes, setVolumes] = useState(0);
+  // const [volumes, setVolumes] = useState(0);
+  const [volumes, setVolumes] = useState<number | null>(null);
   const [volumesRestantes, setVolumesRestantes] = useState(0);
   const [message, setMessage] = useState('');
   const [conferencias, setConferencias] = useState<{ nf: string, volumes: number }[]>([]);
@@ -31,19 +32,27 @@ export default function Home() {
 
   // Função para tratar a mudança da quantidade de volumes
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVolumes(Number(e.target.value));
-    setVolumesRestantes(Number(e.target.value));
-    setMessage('Insira a chave da NF');
+    const quantidadeVolumes = Number(e.target.value);
+    if (quantidadeVolumes > 0) {
+      setVolumes(quantidadeVolumes);
+      setVolumesRestantes(quantidadeVolumes);
+      setMessage('Insira a chave da NF');
+    } else {
+      setVolumes(null);
+      setMessage('Por favor, insira uma quantidade válida de volumes.');
+    }
   };
 
   // Função para tratar a bipagem da chave NF
   const handleNfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const chave = e.target.value;
-    if (chave.length === 44) {
+    if (chave.length === 44 && volumes) { // Só permite bipar NF se volumes for inserido
       const nfExtraido = chave.slice(25, 34);
       setNf(nfExtraido);
       setMessage(`NF: ${nfExtraido}. Agora bip os volumes.`);
       setBipandoVolumes(true);
+    } else if (!volumes) {
+      setMessage('Por favor, insira a quantidade de volumes antes de bipar a NF.');
     }
   };
 
@@ -61,10 +70,12 @@ export default function Home() {
         } else {
           setMessage(`Volume bipado. Restam ${volumesRestantes - 1} volumes.`);
         }
+        //e.target.value = '';// Limpa o campo de bipagem após cada volume bipado
       } else {
         setMessage('Erro: NF divergente');
         new Audio('/erro.mp3').play();
       }
+      e.target.value = ''; // Limpa o campo após bipar
     }
   };
 
@@ -74,7 +85,7 @@ const handleSave = async () => {
     setMessage('Erro: Supabase não está configurado.');
     return;
   }
-  const novaConferencia = { nf, volumes };
+  const novaConferencia = { nf, volumes: volumes as number };
   const { error } = await supabase
     .from('conferencias')
     .insert([novaConferencia]);
@@ -82,7 +93,7 @@ const handleSave = async () => {
   if (error) {
     setMessage(`Erro ao salvar a conferência: ${error.message}`);
   } else {
-    setConferencias(prev => [...prev, novaConferencia]);
+    setConferencias(prev => [...prev, { nf, volumes: volumes as number }]);
     console.log('Conferências atuais:', [...conferencias, novaConferencia]);
     setMessage('Conferência salva com sucesso!');
   }
@@ -126,13 +137,13 @@ const handleSave = async () => {
     <div className="main-container">
       <div className="content">
         {/* Logo da empresa */}
-        <Image src="/logo.png" alt="Logo" width={150} height={150} />
+        <Image src="/logo.png" alt="Logo" width={200} height={200} />
 
         <h1>Conferência de Expedição</h1>
         {!bipandoVolumes ? (
           <>
             <input type="number" placeholder="Quantidade de volumes" onChange={handleVolumeChange} />
-            <input type="text" placeholder="Bipe a chave da NF" onChange={handleNfChange} />
+            <input type="text" placeholder="Bipe a chave da NF" onChange={handleNfChange} disabled={!volumes}/> {/*"disabled={!volumes}" desabilita o campo de input de NF se o volume não for inserido*/}
           </>
         ) : (
           <input type="text" placeholder="Bipe o volume" onChange={handleEtiquetaChange} />
