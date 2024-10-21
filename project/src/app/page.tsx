@@ -154,7 +154,7 @@ const handleSave = async () => {
           <>
             <button onClick={handleNovaNota}>Incluir Nova Nota</button>
             <button onClick={handleExportPDF}>Finalizar e Exportar Relatório</button>
-            <button onClick={handleSave}>Salvar Conferência</button>
+            {/*<button onClick={handleSave}>Salvar Conferência</button>*/}
           </>
         )}
       </div>
