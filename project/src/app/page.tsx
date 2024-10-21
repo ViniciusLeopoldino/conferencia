@@ -85,7 +85,7 @@ const handleSave = async () => {
     setMessage('Erro: Supabase não está configurado.');
     return;
   }
-  const novaConferencia = { nf, volumes: volumes as number };
+  const novaConferencia = { nf, volumes: volumes as number, created_at: new Date().toISOString() };
   const { error } = await supabase
     .from('conferencias')
     .insert([novaConferencia]);
