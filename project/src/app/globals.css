@@ -66,6 +66,14 @@ button:hover {
   background-color: #00635a;
 }
 
+.conferencias button {
+  background-color: #ff0000;
+}
+
+.conferencias button:hover {
+  background-color: #ff4b4b;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

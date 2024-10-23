@@ -54,36 +54,41 @@ export default function Home() {
   const handleEtiquetaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const etq = e.target.value;
     if (etq.length === 19) {
-      const nfEtiqueta = etq.slice(4, 13);
-      const volume = etq.slice(-3);
+        const nfEtiqueta = etq.slice(4, 13); // Extrai a NF da etiqueta
+        const volume = etq.slice(-3); // Extrai o volume dos 3 últimos caracteres
 
-      if (nfEtiqueta === nf) {
-        if (bipados.includes(volume)) {
-          setMessage('Erro: Volume já bipado');
-          new Audio('/erro.mp3').play();
-        } else if (Number(volume) > (volumes as number)) {
-          setMessage('Erro: Volume excede a quantidade informada.');
-          new Audio('/erro.mp3').play();
-          setShowRestart(true); // Exibe o botão de reiniciar em caso de erro
+        // Verifica se a NF da etiqueta corresponde à NF informada
+        if (nfEtiqueta === nf) {
+            // Verifica se o volume já foi bipado
+            if (bipados.includes(volume)) {
+                setMessage('Erro: Volume já bipado');
+                new Audio('/erro.mp3').play();
+            } else if (Number(volume) > (volumes as number)) {
+                setMessage('Erro: Volume excede a quantidade informada.');
+                new Audio('/erro.mp3').play();
+                setShowRestart(true); // Exibe o botão de reiniciar em caso de erro
+            } else {
+                // Adiciona o volume ao array de volumes bipados
+                setBipados((prev) => [...prev, volume]);
+                setVolumesRestantes((prev) => prev - 1);
+                if (volumesRestantes === 1) {
+                    setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
+                    setBipandoVolumes(false);
+                    handleSave();
+                } else {
+                    setMessage(`Volume ${volume} de ${volumes} bipado. Restam ${volumesRestantes - 1} volumes.`);
+                }
+            }
+            e.target.value = ''; // Limpa o input após a bipagem
         } else {
-          setBipados((prev) => [...prev, volume]);
-          setVolumesRestantes((prev) => prev - 1);
-          if (volumesRestantes === 1) {
-            setMessage('Todos os volumes bipados. Deseja incluir nova nota ou finalizar?');
-            setBipandoVolumes(false);
-            handleSave();
-          } else {
-            setMessage(`Volume ${volume} de ${volumes} bipado. Restam ${volumesRestantes - 1} volumes.`);
-          }
+            // Mensagem de erro se a NF não corresponder
+            setMessage('Erro: NF divergente');
+            new Audio('/erro.mp3').play();
+            e.target.value = ''; // Limpa o input após a bipagem
         }
-        e.target.value = '';
-      } else {
-        setMessage('Erro: NF divergente');
-        new Audio('/erro.mp3').play();
-        e.target.value = '';
-      }
     }
-  };
+};
+
 
   const handleSave = async () => {
     if (!supabase) {
@@ -109,7 +114,7 @@ export default function Home() {
     doc.addImage(logo, 'PNG', 10, 10, 50, 20);
     doc.text("Relatório de Conferência", 10, 40);
     conferencias.forEach((conf, index) => {
-      doc.text(`Nota Fiscal: ${conf.nf} | Quantidade de volumes: ${conf.volumes}`, 10, 50 + (index * 10));
+        doc.text(`Nota Fiscal: ${conf.nf} | Quantidade de volumes: ${conf.volumes}`, 10, 50 + (index * 10));
     });
     const finalLine = 50 + (conferencias.length * 10) + 20;
     doc.text(`Data: ${new Date().toLocaleDateString()}`, 10, finalLine);
@@ -118,7 +123,17 @@ export default function Home() {
     doc.text('Placa: _______________', 10, finalLine + 30);
     doc.text('Assinatura: ___________', 10, finalLine + 40);
     doc.save('relatorio_conferencia.pdf');
-  };
+
+    // Limpa os estados para reiniciar a bipagem
+    setNf('');
+    setVolumes(null);
+    setVolumesRestantes(0);
+    setBipados([]);
+    setConferencias([]); // Limpa as conferências salvas
+    setMessage('Conferência finalizada. Insira a quantidade de volumes novamente.');
+    setShowRestart(false); // Oculta o botão de reiniciar
+};
+
 
   const handleNovaNota = () => {
     setNf('');
@@ -129,17 +144,9 @@ export default function Home() {
   };
 
   const handleReiniciar = () => {
-    // Reinicia os estados necessários
-    setNf('');
-    setVolumes(null);
-    setVolumesRestantes(0);
-    setBipados([]);
-    setMessage('Reiniciado. Insira a quantidade de volumes novamente.');
-    setShowRestart(false);
-
-    // Força a atualização da página
+    // Atualiza a página
     window.location.reload();
-};
+  };
 
   return (
     <div className="main-container">
@@ -163,9 +170,10 @@ export default function Home() {
           </>
         )}
 
+        <div className="conferencias">
         {showRestart && <button onClick={handleReiniciar}>Reiniciar Conferência</button>}
+        </div>
       </div>
     </div>
   );
 }
-
