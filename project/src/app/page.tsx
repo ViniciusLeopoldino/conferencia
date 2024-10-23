@@ -1,3 +1,5 @@
+//TODO: incluir lógica para o usuario não precisar informar a quantidade de volumes pegar pela bipagem da etiqueta, considerar o campo volume total da etiqueta caracter (14, 15 e 16) 3567000009087002001
+
 "use client";
 
 import { createClient } from '@supabase/supabase-js';

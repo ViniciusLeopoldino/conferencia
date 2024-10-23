@@ -42,12 +42,12 @@ body {
   max-width: 600px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centraliza os itens */
+  align-items: center; 
 }
 
 input, button {
-  width: 100%; /* Para inputs e botões ocuparem toda a largura */
-  max-width: 400px; /* Limite de largura */
+  width: 100%; 
+  max-width: 400px; 
   margin: 10px 0;
   padding: 10px;
   text-align: center;
