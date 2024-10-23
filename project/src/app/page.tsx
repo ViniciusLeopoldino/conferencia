@@ -129,13 +129,17 @@ export default function Home() {
   };
 
   const handleReiniciar = () => {
+    // Reinicia os estados necessários
     setNf('');
     setVolumes(null);
     setVolumesRestantes(0);
     setBipados([]);
     setMessage('Reiniciado. Insira a quantidade de volumes novamente.');
     setShowRestart(false);
-  };
+
+    // Força a atualização da página
+    window.location.reload();
+};
 
   return (
     <div className="main-container">
@@ -164,3 +168,4 @@ export default function Home() {
     </div>
   );
 }
+
