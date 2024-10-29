@@ -15,8 +15,8 @@ Esta aplicação facilita a conferência de expedição, permitindo a validaçã
 # Como Executar o Projeto
 1. Clone o repositório:
 ```
-git clone <URL-do-repositório>
-cd <nome-do-repositório>
+git clone <https://github.com/ViniciusLeopoldino/conferencia.git>
+cd <conferencia>
 ```
 2. Instale as dependências:
 ```
