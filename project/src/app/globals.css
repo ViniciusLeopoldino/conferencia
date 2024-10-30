@@ -74,6 +74,14 @@ button:hover {
   background-color: #ff4b4b;
 }
 
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
